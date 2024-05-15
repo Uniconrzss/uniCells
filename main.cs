@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 using System.Reflection;
@@ -21,6 +22,7 @@ namespace HelloWorld
         public const int processingHydroEUsage = 1;
         public const int spittingEUsage = 1;
         public const int movingEUsage = 1;
+        public const int multiplicationEUsage = 1;
 
         public const int energyFromSugar = 10;
         public const int energyFromOxygen = 10;
@@ -625,7 +627,86 @@ namespace HelloWorld
         }
         public void Multiply()
         {
-            // Fuuuuck doing this right now.
+            bool isValid = false;
+            Random rand = new Random();
+            int counter = 0;
+
+            SetDir:
+            if (counter >= 4)
+            {
+                return;
+            }
+            int dir = rand.Next(0,4);
+            int addX = 0;
+            int addY = 0;
+            switch (dir)
+            {
+                case 0:
+                    if (Globals.AreCoordsEmpty(CellX, CellY-1, world))
+                    {
+                        isValid = true;
+                        addY = -1;
+                    }
+                    else
+                    {
+                        counter++;
+                        goto SetDir;
+                    }
+                    break;
+                case 1:
+                    if (Globals.AreCoordsEmpty(CellX, CellY+1, world))
+                    {
+                        isValid = true;
+                        addY = 1;
+                    }
+                    else
+                    {
+                        counter++;
+                        goto SetDir;
+                    }
+                    break;
+                case 2:
+                    if (Globals.AreCoordsEmpty(CellX-1, CellY, world))
+                    {
+                        isValid = true;
+                        addX = -1;
+                    }
+                    else
+                    {
+                        counter++;
+                        goto SetDir;
+                    }
+                    break;
+                case 3:
+                    if (Globals.AreCoordsEmpty(CellX+1, CellY, world))
+                    {
+                        isValid = true;
+                        addX = 1;
+                    }
+                    else
+                    {
+                        counter++;
+                        goto SetDir;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            if (isValid == true && energy >= Globals.multiplicationEUsage)
+            {
+                energy -= Globals.movingEUsage;
+
+                // Give The birthed cell the maximum energy it can.
+                int varx = energy - givenEGene;
+                int maxenergy = givenEGene - varx;
+                energy -= maxenergy;
+                // Create Cell
+                Cell newCell = new Cell(DNA, maxenergy, givenEGene, CellX += addX. CellY += addY, deathmark);
+                // Add the cell to the world.
+                Array.Resize(ref world.existingCells, world.existingCells.Length + 1);
+                world.existingCells[world.existingCells.GetUpperBound(0)] = newCell;
+            }
         }
         public void Process(string resource)
         {
