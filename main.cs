@@ -130,7 +130,7 @@ namespace HelloWorld
             testOxy.X = 1;
             testOxy.Y = 2;
             string DNA1 = "KI";
-            string DNA2 = "KI";
+            string DNA2 = "KIKIL";
             string DNA3 = "HJ";
             string DNA4 = "EFGL";
             string DNA5 = "AB";
@@ -438,7 +438,7 @@ namespace HelloWorld
                     Move("Down", world);
                     break;
                 case 'L':
-                    Multiply();
+                    Multiply(world);
                     break;
                 case 'M':
                     break;
@@ -625,7 +625,7 @@ namespace HelloWorld
                 CellY += addY;
             }
         }
-        public void Multiply()
+        public void Multiply(World world)
         {
             bool isValid = false;
             Random rand = new Random();
@@ -702,7 +702,7 @@ namespace HelloWorld
                 int maxenergy = givenEGene - varx;
                 energy -= maxenergy;
                 // Create Cell
-                Cell newCell = new Cell(DNA, maxenergy, givenEGene, CellX += addX. CellY += addY, deathmark);
+                Cell newCell = new Cell(DNA, maxenergy, givenEGene, CellX += addX, CellY += addY, deathmark);
                 // Add the cell to the world.
                 Array.Resize(ref world.existingCells, world.existingCells.Length + 1);
                 world.existingCells[world.existingCells.GetUpperBound(0)] = newCell;
