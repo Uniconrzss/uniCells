@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
@@ -8,14 +9,16 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Internal;
 
-namespace HelloWorld
+namespace Simulation
 {
     public static class Globals
     {
         // NOTE TO SELF: RANDOM.NEXT IS LIKE THIS [)
         // AS IN RAND.NEXT(0,2) CAN GENERATE ONLY 0 AND 1
 
-        public const int mutationChance = 10; //1 In this number
+        public const int maxX = 30;
+        public const int maxY = 30;
+        public const int mutationChance = 3; //1 In this number
         public const int eatingEUsage = 1;
         public const int processingSugEUsage = 1;
         public const int processingOxyEUsage = 1;
@@ -53,6 +56,7 @@ namespace HelloWorld
 
         public static EResource[] RemoveResource(int index, EResource[] resources)
         {
+            Console.WriteLine("Deleting cell");
             EResource[] replaceResources = new EResource[resources.Length-1];
             int counter = 0;
             resources[index] = null;
@@ -60,7 +64,10 @@ namespace HelloWorld
             {
                 if (resources[i] == null)
                 {
-                    i++;
+                    if (i+1 < resources.Length)
+                    {
+                        i++;
+                    }
                 }
                 else
                 {
@@ -72,22 +79,10 @@ namespace HelloWorld
         }
         public static Cell[] RemoveCell(int index, Cell[] cells)
         {
-            Cell[] replaceCells = new Cell[cells.Length-1];
-            int counter = 0;
-            cells[index] = null;
-            for (int i = 0; i < cells.Length; i++)
-            {
-                if (cells[i] == null)
-                {
-                    i++;
-                }
-                else
-                {
-                    replaceCells[counter] = cells[i];
-                }
-                counter++;
-            }
-            return replaceCells;
+            List<Cell> replaceCells = new List<Cell>(cells);
+            replaceCells.RemoveAt(index);
+
+            return replaceCells.ToArray();
         }
 
         public static bool AreCoordsEmpty(int x, int y, World world)
@@ -115,8 +110,8 @@ namespace HelloWorld
         public Cell[] existingCells;
         public EResource[] existingResources;
 
-        public const int WorldSX = 10;
-        public const int WorldSY = 10;
+        public const int WorldSX = Globals.maxX;
+        public const int WorldSY = Globals.maxY;
     }
 
     class Program
@@ -129,16 +124,45 @@ namespace HelloWorld
             testOxy.type = "Oxygen";
             testOxy.X = 1;
             testOxy.Y = 2;
-            string DNA1 = "KI";
-            string DNA2 = "KIKIL";
-            string DNA3 = "HJ";
-            string DNA4 = "EFGL";
-            string DNA5 = "AB";
-            string DNA6 = "AC";
-            string DNA7 = "AD";
+            // Goes towards the down and right
+            // string DNA1 = "KI";
+            // string DNA2 = "KIKIL";
+            // string DNA3 = "HJ";
+            // string DNA4 = "EFGL";
+            // string DNA5 = "AB";
+            // string DNA6 = "AC";
+            // string DNA7 = "AD";
+            // string[] DNA = {DNA1, DNA2, DNA3, DNA4, DNA5, DNA6, DNA7};
+            // Cell firstCell = new Cell(DNA, 100, 100, 0,0, 50);
+            // world.existingCells = new Cell[] {firstCell};
+
+            // Plant Attempt 1:
+            string DNA1 = "J";
+            string DNA2 = "AC";
+            string DNA3 = "HI";
+            string DNA4 = "KLFGE";
+            string DNA5 = "";
+            string DNA6 = "A";
+            string DNA7 = "";
             string[] DNA = {DNA1, DNA2, DNA3, DNA4, DNA5, DNA6, DNA7};
-            Cell firstCell = new Cell(DNA, 100, 100, 0,0, 50);
-            world.existingCells = new Cell[] {firstCell};
+            Cell plantCell = new Cell(DNA, 40, 40, 15, 15, 10);
+
+            // Bacterium:
+            string DNA11 = "JKHI";
+            string DNA21 = "AL";
+            string DNA31 = "JKHI";
+            string DNA41 = "L";
+            string DNA51 = "AB";
+            string DNA61 = "AC";
+            string DNA71 = "AD";
+            string[] DNAa = {DNA11, DNA21, DNA31, DNA41, DNA51, DNA61, DNA71};
+            Cell bacterium = new Cell(DNAa, 40, 50, 5, 5, 10);
+
+            // Dummy Cell
+            string[] dummyDNA = new string[] {"A","A","A","A","A","A","A"};
+            Cell dummyCell = new Cell(dummyDNA, 999, 999, 0, 0, 999);
+            world.existingCells = new Cell[] {plantCell, bacterium};
+
             world.existingResources = new EResource[] {testOxy};
             bool simRunning = true;
 
@@ -152,9 +176,9 @@ namespace HelloWorld
                 }
 
                 // Drawing Loop
-                for (int i = 0; i < 10; i++) // Y
+                for (int i = 0; i < Globals.maxY; i++) // Y
                 {
-                    for (int j = 0; j < 10; j++) // X
+                    for (int j = 0; j < Globals.maxX; j++) // X
                     {
                         bool printed = false;
                         // Loop Through All of the cells. 
@@ -191,6 +215,9 @@ namespace HelloWorld
                                         printed = true;
                                         break;
                                     default:
+                                        Console.WriteLine($"Error while printing resoruce: {l}");
+                                        Console.WriteLine($"Resource Type: {world.existingResources[l].type}");
+                                        Console.WriteLine($"Resource Coordinates: [{world.existingResources[l].X} {world.existingResources[l].Y}]");
                                         Console.Write('#');
                                         break;
                                 }
@@ -264,13 +291,19 @@ namespace HelloWorld
                 // Loop through all of the DNA
                 for (int i = 0; i < DNA.Length; i++)
                 {
-                    int mutationLocation = rand.Next(0, DNA[i].Length);
-                    int mutationLetter = rand.Next(0, Globals.dnaCharNum);
-                    string mutatedDNA = DNA[i];
-
-                    StringBuilder sb = new StringBuilder(mutatedDNA);
-                    sb[mutationLocation] = Globals.dnaChars[mutationLetter];
-                    mutatedDNA = sb.ToString();
+                    rand = new Random();
+                    mutation = rand.Next(0,Globals.mutationChance);
+                    if (DNA[i].Length > 0)
+                    {
+                        int mutationLocation = rand.Next(0, DNA[i].Length);
+                        int mutationLetter = rand.Next(0, Globals.dnaCharNum);
+                        string mutatedDNA = DNA[i];
+                        StringBuilder sb = new StringBuilder(mutatedDNA);
+                        sb[mutationLocation] = Globals.dnaChars[mutationLetter];
+                        mutatedDNA = sb.ToString();
+                        Console.WriteLine($"Mutated a Gene! Old: {DNA[i]} New: {mutatedDNA}");
+                        DNA[i] = mutatedDNA;
+                    }
                 }
 
                 // Mutate the givenEGene
@@ -281,7 +314,7 @@ namespace HelloWorld
         public void tick(World world)
         {
             // Check if about to die
-            if (deathmark - age < 10)
+            if (deathmark - age < deathmark/2)
             {
                 DNAActive[3] = true;
             }
@@ -355,8 +388,6 @@ namespace HelloWorld
 
                     // Increment the counter
                     DNACounter[i]++;
-
-                    Console.WriteLine("test");
                     // If the counter is higher than the length of the DNA, reset it to 0.
                     if (DNACounter[i] >= DNA[i].Length)
                     {
@@ -370,17 +401,24 @@ namespace HelloWorld
             }
 
             // Die
-            if (age >= deathmark)
+            if (age >= deathmark || energy < 0)
             {
                 for (int i = 0; i < world.existingCells.Length; i++)
                 {
                     if (world.existingCells[i].CellX == CellX && world.existingCells[i].CellY == CellY)
                     {
-                        Globals.RemoveCell(i, world.existingCells);
+                        world.existingCells = Globals.RemoveCell(i, world.existingCells);
+                        i = world.existingCells.Length;
+                        break;
                     }
                 }
-                
             }
+
+            // Age Up
+            age++;
+
+            // Print stats
+            Console.WriteLine($"Cell Stats: X:{CellX} Y:{CellY} Repreducing?:{deathmark - age < deathmark/2} Age:{age}/{deathmark} DNA:{DNA[0]} {DNA[1]} {DNA[2]} {DNA[3]} {DNA[4]} {DNA[5]} {DNA[6]} Energy: {energy} Oxygen:{oxygen} Sugar:{sugar} Hydrogen:{hydrogen}");
         }
 
         public void TouchingResource(EResource resource)
@@ -455,6 +493,7 @@ namespace HelloWorld
         {
             Random rand = new Random();
             EResource newResource = new EResource();
+            bool isValid = false;
 
             // Setup the resource and subtract from cell stockpile.
             switch (resource)
@@ -464,6 +503,11 @@ namespace HelloWorld
                     {
                         sugar--;
                         newResource.type = "Sugar";
+                        isValid = true;
+                    }
+                    else
+                    {
+                        isValid = false;
                     }
                     break;
                 case "Oxygen":
@@ -471,6 +515,11 @@ namespace HelloWorld
                     {
                         oxygen--;
                         newResource.type = "Oxygen";
+                        isValid = true;
+                    }
+                    else
+                    {
+                        isValid = false;
                     }
                     break;
                 case "Hydrogen":
@@ -478,6 +527,11 @@ namespace HelloWorld
                     {
                         hydrogen--;
                         newResource.type = "Hydrogen";
+                        isValid = true;
+                    }
+                    else
+                    {
+                        isValid = false;
                     }
                     break;
                 default:
@@ -485,6 +539,10 @@ namespace HelloWorld
                     {
                         oxygen--;
                         newResource.type = "Oxygen";
+                    }
+                    else
+                    {
+                        return;
                     }
                     break;
             }
@@ -572,9 +630,10 @@ namespace HelloWorld
                     break;
             }
 
-            if (found)
+            if (found && isValid)
             {
                 // Add the resource to the world.
+                Console.WriteLine("Spat out a resource!");
                 Array.Resize(ref world.existingResources, world.existingResources.Length + 1);
                 world.existingResources[world.existingResources.GetUpperBound(0)] = newResource;
             }
@@ -587,28 +646,28 @@ namespace HelloWorld
             switch (where)
             {
                 case "Up":
-                    if (Globals.AreCoordsEmpty(CellX, CellY-1, world))
+                    if (Globals.AreCoordsEmpty(CellX, CellY-1, world) && CellY > 0)
                     {
                         isValid = true;
                         addY = -1;
                     }
                     break;
                 case "Down":
-                    if (Globals.AreCoordsEmpty(CellX, CellY+1, world))
+                    if (Globals.AreCoordsEmpty(CellX, CellY+1, world) && CellY < Globals.maxY-1)
                     {
                         isValid = true;
                         addY = 1;
                     }
                     break;
                 case "Left":
-                    if (Globals.AreCoordsEmpty(CellX-1, CellY, world))
+                    if (Globals.AreCoordsEmpty(CellX-1, CellY, world) && CellX > 0)
                     {
                         isValid = true;
                         addX = -1;
                     }
                     break;
                 case "Right":
-                    if (Globals.AreCoordsEmpty(CellX+1, CellY, world))
+                    if (Globals.AreCoordsEmpty(CellX+1, CellY, world) && CellX < Globals.maxX-1)
                     {
                         isValid = true;
                         addX = 1;
@@ -627,6 +686,7 @@ namespace HelloWorld
         }
         public void Multiply(World world)
         {
+            Console.WriteLine("Multiplying!");
             bool isValid = false;
             Random rand = new Random();
             int counter = 0;
@@ -713,7 +773,7 @@ namespace HelloWorld
             switch (resource)
             {
                 case "Sugar":
-                    if (energy >= Globals.processingSugEUsage)
+                    if (energy >= Globals.processingSugEUsage && sugar > 0)
                     {
                         energy -= Globals.processingSugEUsage;
                         sugar--;
@@ -721,7 +781,7 @@ namespace HelloWorld
                     }
                     break;
                 case "Oxygen":
-                    if (energy >= Globals.processingOxyEUsage)
+                    if (energy >= Globals.processingOxyEUsage && oxygen > 0)
                     {
                         energy -= Globals.processingOxyEUsage;
                         sugar--;
@@ -729,7 +789,7 @@ namespace HelloWorld
                     }
                     break;
                 case "Hydrogen":
-                    if (energy >= Globals.processingHydroEUsage)
+                    if (energy >= Globals.processingHydroEUsage && hydrogen > 0)
                     {
                         energy -= Globals.processingHydroEUsage;
                         sugar--;
