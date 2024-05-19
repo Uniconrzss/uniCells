@@ -16,9 +16,9 @@ namespace Simulation
         // NOTE TO SELF: RANDOM.NEXT IS LIKE THIS [)
         // AS IN RAND.NEXT(0,2) CAN GENERATE ONLY 0 AND 1
 
-        public const int maxX = 30;
+        public const int maxX = 50;
         public const int maxY = 30;
-        public const int mutationChance = 3; //1 In this number
+        public const int mutationChance = 2; //1 In this number
         public const int eatingEUsage = 1;
         public const int processingSugEUsage = 1;
         public const int processingOxyEUsage = 1;
@@ -31,6 +31,7 @@ namespace Simulation
         public const int energyFromOxygen = 10;
         public const int energyFromHydrogen = 10;
 
+        public const int maxResourceCapacity = 5;
         public const char CellChar = 'C';
         public const char SugChar = 'S';
         public const char OxyChar = 'O';
@@ -50,32 +51,16 @@ namespace Simulation
         // J = Move Up (Moves the Cell Up)
         // K = Move Down (Moves the Cell Down)
         // L = Multiply (Creates a duplicate with same genes (possibility of mutation). Given energy is determined by the energy gene.)
-        // M =
+        // M = Activate Reserve Gene (Activates the 8th Gene in the Cell)
         // N =
         // O =
 
         public static EResource[] RemoveResource(int index, EResource[] resources)
         {
-            Console.WriteLine("Deleting cell");
-            EResource[] replaceResources = new EResource[resources.Length-1];
-            int counter = 0;
-            resources[index] = null;
-            for (int i = 0; i < resources.Length; i++)
-            {
-                if (resources[i] == null)
-                {
-                    if (i+1 < resources.Length)
-                    {
-                        i++;
-                    }
-                }
-                else
-                {
-                    replaceResources[counter] = resources[i];
-                }
-                counter++;
-            }
-            return replaceResources;
+            List<EResource> replaceResources = new List<EResource>(resources);
+            replaceResources.RemoveAt(index);
+
+            return replaceResources.ToArray();
         }
         public static Cell[] RemoveCell(int index, Cell[] cells)
         {
@@ -120,10 +105,17 @@ namespace Simulation
         {
             // Setup World
             World world = new World();
-            EResource testOxy = new EResource();
-            testOxy.type = "Oxygen";
-            testOxy.X = 1;
-            testOxy.Y = 2;
+            int[] RcoordsX = {1, 4, 7, 6, 8, 10, 13, 17, 2};
+            int[] RcoordsY = {5, 3, 8, 9, 4, 1, 9, 14, 12};
+            string[] RsourceT = {"Sugar", "Sugar", "Sugar", "Sugar", "Sugar", "Sugar", "Sugar", "Sugar", "Sugar"};
+            EResource[] allResources = new EResource[9];
+            for (int i = 0; i < RsourceT.Length; i++)
+            {
+                allResources[i] = new EResource();
+                allResources[i].type = RsourceT[i];
+                allResources[i].X = RcoordsX[i];
+                allResources[i].Y = RcoordsY[i];
+            }
             // Goes towards the down and right
             // string DNA1 = "KI";
             // string DNA2 = "KIKIL";
@@ -137,15 +129,16 @@ namespace Simulation
             // world.existingCells = new Cell[] {firstCell};
 
             // Plant Attempt 1:
-            string DNA1 = "J";
-            string DNA2 = "AC";
-            string DNA3 = "HI";
-            string DNA4 = "KLFGE";
-            string DNA5 = "";
-            string DNA6 = "A";
-            string DNA7 = "";
-            string[] DNA = {DNA1, DNA2, DNA3, DNA4, DNA5, DNA6, DNA7};
-            Cell plantCell = new Cell(DNA, 40, 40, 15, 15, 10);
+            // string DNA1 = "J";
+            // string DNA2 = "AC";
+            // string DNA3 = "HI";
+            // string DNA4 = "KLFGE";
+            // string DNA5 = "";
+            // string DNA6 = "A";
+            // string DNA7 = "";
+            // string DNA8 = "";
+            // string[] DNA = {DNA1, DNA2, DNA3, DNA4, DNA5, DNA6, DNA7, DNA8};
+            // Cell plantCell = new Cell(DNA, 40, 40, 15, 15, 10);
 
             // Bacterium:
             string DNA11 = "JKHI";
@@ -155,15 +148,31 @@ namespace Simulation
             string DNA51 = "AB";
             string DNA61 = "AC";
             string DNA71 = "AD";
-            string[] DNAa = {DNA11, DNA21, DNA31, DNA41, DNA51, DNA61, DNA71};
-            Cell bacterium = new Cell(DNAa, 40, 50, 5, 5, 10);
+            string DNA81 = "";
+            string[] DNAa = {DNA11, DNA21, DNA31, DNA41, DNA51, DNA61, DNA71, DNA81};
+            Cell bacterium = new Cell(DNAa, 40, 50, 10, 10, 10, true);
+
+            // Sugar Eater:
+            string DNA1 = "HKIJ";
+            string DNA2 = "ABF";
+            string DNA3 = "HKIJ";
+            string DNA4 = "L";
+            string DNA5 = "ABF";
+            string DNA6 = "";
+            string DNA7 = "";
+            string DNA8 = "";
+            string[] DNAsge = {DNA1, DNA2, DNA3, DNA4, DNA5, DNA6, DNA7, DNA8};
+            Cell sugarEater = new Cell(DNAsge, 50, 50, 5, 5, 12, true);
+            Cell sugarEater1 = new Cell(DNAsge, 50, 50, 6, 7, 12, true);
+            Cell sugarEater2 = new Cell(DNAsge, 50, 50, 6, 6, 12, true);
+            Cell sugarEater3 = new Cell(DNAsge, 50, 50, 7, 7, 12, true);
 
             // Dummy Cell
             string[] dummyDNA = new string[] {"A","A","A","A","A","A","A"};
-            Cell dummyCell = new Cell(dummyDNA, 999, 999, 0, 0, 999);
-            world.existingCells = new Cell[] {plantCell, bacterium};
+            Cell dummyCell = new Cell(dummyDNA, 999, 999, 0, 0, 999, true);
+            world.existingCells = new Cell[] {sugarEater, sugarEater1, sugarEater2, sugarEater3, bacterium};
 
-            world.existingResources = new EResource[] {testOxy};
+            world.existingResources = allResources;
             bool simRunning = true;
 
             while (simRunning == true)
@@ -269,45 +278,70 @@ namespace Simulation
         public int CellX;
         public int CellY;
 
-        public Cell(string[] GivenDNA, int GivenEnergy, int GivenEGene, int BornCellX, int BornCellY, int maxAge)
+        public Cell(string[] GivenDNA, int GivenEnergy, int GivenEGene, int BornCellX, int BornCellY, int maxAge, bool spawned)
         {
             age = 0;
             deathmark = maxAge;
             energy = GivenEnergy;
-            DNACounter = new int[] {0,0,0,0,0,0,0}; // Sets counter to 0 for all DNA.
-            DNAActive = new bool[] {true, true, false, false, false, false, false};
-            CellX = BornCellX;
-            CellY = BornCellY;
-
-            // Apply Mutation to dna.
-            Random rand = new Random();
-            int mutation = rand.Next(0,Globals.mutationChance);
+            DNACounter = new int[] {0,0,0,0,0,0,0,0}; // Sets counter to 0 for all DNA.
+            DNAActive = new bool[] {true, true, false, false, false, false, false, false};
             DNA = GivenDNA;
             givenEGene = GivenEGene;
 
-            // Mutate!
-            if (mutation == 0)
-            {
-                // Loop through all of the DNA
-                for (int i = 0; i < DNA.Length; i++)
-                {
-                    rand = new Random();
-                    mutation = rand.Next(0,Globals.mutationChance);
-                    if (DNA[i].Length > 0)
-                    {
-                        int mutationLocation = rand.Next(0, DNA[i].Length);
-                        int mutationLetter = rand.Next(0, Globals.dnaCharNum);
-                        string mutatedDNA = DNA[i];
-                        StringBuilder sb = new StringBuilder(mutatedDNA);
-                        sb[mutationLocation] = Globals.dnaChars[mutationLetter];
-                        mutatedDNA = sb.ToString();
-                        Console.WriteLine($"Mutated a Gene! Old: {DNA[i]} New: {mutatedDNA}");
-                        DNA[i] = mutatedDNA;
-                    }
-                }
+            CellX = BornCellX;
+            CellY = BornCellY;
 
-                // Mutate the givenEGene
-                givenEGene = givenEGene + rand.Next(-10 * (Globals.mutationChance/2), 10 * (Globals.mutationChance/2));
+            if (!spawned)
+            {
+                Random rand = new Random();
+                deathmark = maxAge + rand.Next(-1 * (10 - Globals.mutationChance), 10 * (10 - Globals.mutationChance));
+
+                // Apply Mutation to dna.
+                int mutation = rand.Next(0,Globals.mutationChance);
+                DNA = GivenDNA;
+                givenEGene = GivenEGene;
+
+                // Mutate!
+                if (mutation == 0)
+                {
+                    // Loop through all of the DNA
+                    for (int i = 0; i < DNA.Length; i++)
+                    {
+                        rand = new Random();
+                        mutation = rand.Next(0,Globals.mutationChance);
+                        if (DNA[i].Length > 0)
+                        {
+                            int mutationLocation = rand.Next(0, DNA[i].Length);
+                            int mutationLetter = rand.Next(0, Globals.dnaCharNum);
+                            string mutatedDNA = DNA[i];
+                            StringBuilder sb = new StringBuilder(mutatedDNA);
+                            sb[mutationLocation] = Globals.dnaChars[mutationLetter];
+                            mutatedDNA = sb.ToString();
+                            Console.WriteLine($"Mutated a Gene! Old: {DNA[i]} New: {mutatedDNA}");
+                            DNA[i] = mutatedDNA;
+                        }
+
+                        // Add possibility of adding another letter to a gene.
+                        // This makes it possible for DNA to get either longer or shorter.
+                        int geneLengthPossibility = rand.Next(0,3);
+
+                        // Make Longer (1)
+                        if (geneLengthPossibility == 1)
+                        {
+                            DNA[i]+=Globals.dnaChars[rand.Next(0, Globals.dnaCharNum)];
+                        }
+
+                        // Make Shorter (2)
+                        if (geneLengthPossibility == 2 && DNA[i].Length > 0)
+                        {
+                            DNA[i] = DNA[i].Substring(0, DNA[i].Length-1);
+                        }
+
+                    }
+
+                    // Mutate the givenEGene
+                    givenEGene = givenEGene + rand.Next(-10 * (Globals.mutationChance/2), 10 * (Globals.mutationChance/2));
+                }
             }
         }
 
@@ -349,7 +383,6 @@ namespace Simulation
 
 
 
-
             // Check if touching resources
             for (int i = 0; i < world.existingResources.Length; i++)
             {
@@ -381,13 +414,8 @@ namespace Simulation
             // Process DNA
             for (int i = 0; i < DNAActive.Length; i++)
             {
-                if (DNAActive[i] == true)
+                if (DNAActive[i] == true && DNA[i].Length > 0)
                 {
-                    string unprocessedDNA = DNA[i];
-                    ProcessDNALetter(unprocessedDNA[DNACounter[i]], world);
-
-                    // Increment the counter
-                    DNACounter[i]++;
                     // If the counter is higher than the length of the DNA, reset it to 0.
                     if (DNACounter[i] >= DNA[i].Length)
                     {
@@ -397,17 +425,39 @@ namespace Simulation
                             DNAActive[0] = false;
                         }
                     }
+                    string unprocessedDNA = DNA[i];
+                    ProcessDNALetter(unprocessedDNA[DNACounter[i]], world);
+                    // Increment the counter
+                    DNACounter[i]++;
+                    
                 }
             }
 
             // Die
-            if (age >= deathmark || energy < 0)
+            if (age >= deathmark || energy <= 0 || sugar > Globals.maxResourceCapacity || oxygen > Globals.maxResourceCapacity || hydrogen > Globals.maxResourceCapacity)
             {
                 for (int i = 0; i < world.existingCells.Length; i++)
                 {
                     if (world.existingCells[i].CellX == CellX && world.existingCells[i].CellY == CellY)
                     {
+                        // Delete cell
                         world.existingCells = Globals.RemoveCell(i, world.existingCells);
+
+                        // Spit out resources.
+                        for (int l = 0; l < sugar; l++)
+                        {
+                            Spit_FREE("Sugar", world);
+                        }
+                        for (int l = 0; l < oxygen; l++)
+                        {
+                            Spit_FREE("Oxygen", world);
+                        }
+                        for (int l = 0; l < hydrogen; l++)
+                        {
+                            Spit_FREE("Hydrogen", world);
+                        }
+
+                        // Break out of loop
                         i = world.existingCells.Length;
                         break;
                     }
@@ -479,6 +529,7 @@ namespace Simulation
                     Multiply(world);
                     break;
                 case 'M':
+                    DNAActive[7] = true;
                     break;
                 case 'N':
                     break;
@@ -486,6 +537,106 @@ namespace Simulation
                     break;
                 default:
                     break;
+            }
+        }
+
+        public void Spit_FREE(string resource, World world)
+        {
+            Random rand = new Random();
+            EResource newResource = new EResource();
+            newResource.type = resource;
+            bool found = false;
+            int tries = 0;
+            RandomNumber:
+            // Pick random location
+            int loc = rand.Next(0,4); // [0, 3]
+
+            // Set the new resources coordinates.
+            switch (loc)
+            {
+                case 0: // Up
+                        if (!Globals.AreCoordsEmpty(CellX, CellY-1, world))
+                        {
+                            if (tries >= 4)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                tries++;
+                                goto RandomNumber;
+                            }
+                        }
+                        else
+                        {
+                            newResource.Y = CellY-1;
+                            found = true;
+                        }
+                    break;
+                case 1: // Down
+                        if (!Globals.AreCoordsEmpty(CellX, CellY+1, world))
+                        {
+                            if (tries >= 4)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                tries++;
+                                goto RandomNumber;
+                            }
+                        }
+                        else
+                        {
+                            newResource.Y = CellY+1;
+                            found = true;
+                        }
+                    break;
+                case 2: // Left
+                        if (!Globals.AreCoordsEmpty(CellX-1, CellY, world))
+                        {
+                            if (tries >= 4)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                tries++;
+                                goto RandomNumber;
+                            }
+                        }
+                        else
+                        {
+                            newResource.X = CellX-1;
+                            found = true;
+                        }
+                    break;
+                case 3: // Right
+                        if (!Globals.AreCoordsEmpty(CellX+1, CellY, world))
+                        {
+                            if (tries >= 4)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                tries++;
+                                goto RandomNumber;
+                            }
+                        }
+                        else
+                        {
+                            newResource.X = CellX+1;
+                            found = true;
+                        }
+                    break;
+            }
+
+            if (found)
+            {
+                // Add the resource to the world.
+                Array.Resize(ref world.existingResources, world.existingResources.Length + 1);
+                world.existingResources[world.existingResources.GetUpperBound(0)] = newResource;
             }
         }
 
@@ -571,6 +722,7 @@ namespace Simulation
                         }
                         else
                         {
+                            newResource.Y = CellY-1;
                             found = true;
                         }
                     break;
@@ -589,6 +741,7 @@ namespace Simulation
                         }
                         else
                         {
+                            newResource.Y = CellY+1;
                             found = true;
                         }
                     break;
@@ -607,6 +760,7 @@ namespace Simulation
                         }
                         else
                         {
+                            newResource.X = CellX-1;
                             found = true;
                         }
                     break;
@@ -625,6 +779,7 @@ namespace Simulation
                         }
                         else
                         {
+                            newResource.X = CellX+1;
                             found = true;
                         }
                     break;
@@ -633,7 +788,6 @@ namespace Simulation
             if (found && isValid)
             {
                 // Add the resource to the world.
-                Console.WriteLine("Spat out a resource!");
                 Array.Resize(ref world.existingResources, world.existingResources.Length + 1);
                 world.existingResources[world.existingResources.GetUpperBound(0)] = newResource;
             }
@@ -686,7 +840,6 @@ namespace Simulation
         }
         public void Multiply(World world)
         {
-            Console.WriteLine("Multiplying!");
             bool isValid = false;
             Random rand = new Random();
             int counter = 0;
@@ -762,7 +915,7 @@ namespace Simulation
                 int maxenergy = givenEGene - varx;
                 energy -= maxenergy;
                 // Create Cell
-                Cell newCell = new Cell(DNA, maxenergy, givenEGene, CellX += addX, CellY += addY, deathmark);
+                Cell newCell = new Cell(DNA, maxenergy, givenEGene, CellX += addX, CellY += addY, deathmark, false);
                 // Add the cell to the world.
                 Array.Resize(ref world.existingCells, world.existingCells.Length + 1);
                 world.existingCells[world.existingCells.GetUpperBound(0)] = newCell;
@@ -777,6 +930,7 @@ namespace Simulation
                     {
                         energy -= Globals.processingSugEUsage;
                         sugar--;
+                        oxygen++;
                         energy += Globals.energyFromSugar;
                     }
                     break;
@@ -784,7 +938,8 @@ namespace Simulation
                     if (energy >= Globals.processingOxyEUsage && oxygen > 0)
                     {
                         energy -= Globals.processingOxyEUsage;
-                        sugar--;
+                        oxygen--;
+                        hydrogen++;
                         energy += Globals.energyFromOxygen;
                     }
                     break;
@@ -792,7 +947,8 @@ namespace Simulation
                     if (energy >= Globals.processingHydroEUsage && hydrogen > 0)
                     {
                         energy -= Globals.processingHydroEUsage;
-                        sugar--;
+                        hydrogen--;
+                        sugar++;
                         energy += Globals.energyFromHydrogen;
                     }
                     break;

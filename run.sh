@@ -1,1 +1,0 @@
-mono ./out.exe

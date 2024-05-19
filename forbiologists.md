@@ -1,3 +1,8 @@
+Processing byproducts:
+    Sugar > Oxygen
+    Oxygen > Hydrogen
+    Hydrogen > Sugar
+
 // DNA1 On Birth
 
 // DNA2 Passive Loop
@@ -11,6 +16,8 @@
 // DNA6 On Touch Oxygen
 
 // DNA7 On Touch Hydreogen
+
+// DNA8 Reserve Gene
 
 
 
@@ -40,14 +47,14 @@
 
 // L = Multiply (Creates a duplicate with same genes (possibility of mutation). Given energy is determined by the energy gene.)
 
+// M = Activate Reserve Gene
 
 
-public Cell(string[] GivenDNA, int GivenEnergy, int GivenEGene, int BornCellX, int BornCellY, int maxAge)
+
+Cell(string[] GivenDNA, int GivenEnergy, int GivenEGene, int BornCellX, int BornCellY, int maxAge)
 
 
 
 Plant DNA: J AC HI KLFGE  A
 
 Bacterium DNA: JKHI AL JKHI L AB AC AD  
-
-
